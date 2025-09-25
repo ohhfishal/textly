@@ -99,15 +99,15 @@ func parseCommand(ctx context.Context, reader *TokenReader) ([]Instruction, erro
 	var beats int
 	for {
 		next := reader.Pop()
-		switch {
-		case next.Type == TokenCommandClose:
+		switch next.Type {
+		case TokenCommandClose:
 			// Happy case
 			// TODO: Append the deleting command
 			return append(instructions, Instruction{
 				Opcode: OpSleep,
 				Arg:    beats,
 			}), nil
-		case next.Type == TokenCharacter:
+		case TokenCharacter:
 			if next.Value == "." {
 				beats++
 			}
@@ -122,31 +122,31 @@ func parseBracket(ctx context.Context, reader *TokenReader) ([]Instruction, erro
 	var chars int
 	for {
 		next := reader.Pop()
-		switch {
-		case next.Type == TokenBracketClose:
+		switch next.Type {
+		case TokenBracketClose:
 			// Happy case
 			// TODO: Append the deleting command
 			return append(instructions, Instruction{
 				Opcode: OpDelete,
 				Arg:    chars,
 			}), nil
-		case next.Type == TokenNewline:
+		case TokenNewline:
 			fallthrough
-		case next.Type == TokenEOF:
+		case TokenEOF:
 			return nil, fmt.Errorf(`expected: "]" got: "%s"`, next)
-		case next.Type == TokenCommandStart:
+		case TokenCommandStart:
 			command, err := parseCommand(ctx, reader)
 			if err != nil {
 				return nil, fmt.Errorf("invalid command: %w", err)
 			}
 			instructions = append(instructions, command...)
-		case next.Type == TokenBracketStart:
+		case TokenBracketStart:
 			bracketInstructions, err := parseBracket(ctx, reader)
 			if err != nil {
 				return nil, fmt.Errorf("invalid bracket section: %w", err)
 			}
 			instructions = append(instructions, bracketInstructions...)
-		case next.Type == TokenCharacter:
+		case TokenCharacter:
 			instructions = append(instructions, Instruction{
 				Opcode: OpPrint,
 				Arg:    next.Value,
