@@ -12,6 +12,7 @@ type Opcode string
 const (
 	OpPrint  = "print"
 	OpDelete = "delete"
+	OpSleep  = "sleep"
 )
 
 type Instruction struct {
@@ -75,15 +76,46 @@ func parseSwitch(ctx context.Context, reader *TokenReader, token Token) ([]Instr
 	case TokenBracketStart:
 		bracketInstructions, err := parseBracket(ctx, reader)
 		if err != nil {
-			return nil, fmt.Errorf("invalid bracket setction: %w", err)
+			return nil, fmt.Errorf("invalid bracket section: %w", err)
 		}
 		return bracketInstructions, nil
+	case TokenCommandStart:
+		command, err := parseCommand(ctx, reader)
+		if err != nil {
+			return nil, fmt.Errorf("invalid command: %w", err)
+		}
+		return command, nil
 	case TokenEOF:
 		return []Instruction{}, io.EOF
 	default:
 		return nil, fmt.Errorf("unknown token: %s", token.String())
 	}
 }
+
+func parseCommand(ctx context.Context, reader *TokenReader) ([]Instruction, error) {
+	// TODO: Only supports a single command currently expand as needed
+	var instructions []Instruction
+	var beats int
+	for {
+		next := reader.Pop()
+		switch {
+		case next.Type == TokenCommandClose:
+			// Happy case
+			// TODO: Append the deleting command
+			return append(instructions, Instruction{
+				Opcode: OpSleep,
+				Arg:    beats,
+			}), nil
+		case next.Type == TokenCharacter:
+			if next.Value == "." {
+				beats++
+			}
+		default:
+			return nil, fmt.Errorf("expected '}' or character got: %s", next.String())
+		}
+	}
+}
+
 func parseBracket(ctx context.Context, reader *TokenReader) ([]Instruction, error) {
 	var instructions []Instruction
 	var chars int

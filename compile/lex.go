@@ -14,6 +14,8 @@ const (
 	TokenCharacter TokenType = iota
 	TokenBracketStart
 	TokenBracketClose
+	TokenCommandStart
+	TokenCommandClose
 	TokenNewline
 	TokenEOF
 )
@@ -31,6 +33,10 @@ func (tokenType TokenType) String() string {
 		return "[      "
 	case TokenBracketClose:
 		return "]      "
+	case TokenCommandStart:
+		return "{      "
+	case TokenCommandClose:
+		return "}      "
 	case TokenEOF:
 		return "EOF    "
 	case TokenNewline:
@@ -125,6 +131,20 @@ func Lex(ctx context.Context, file *bufio.Reader, tokens chan<- Token) error {
 			comment = true
 		case !escaped && char == '\\':
 			escaped = true
+		case !escaped && char == '{':
+			tokens <- Token{
+				Type:   TokenCommandStart,
+				Value:  "{",
+				Line:   line,
+				Column: column,
+			}
+		case !escaped && char == '}':
+			tokens <- Token{
+				Type:   TokenCommandClose,
+				Value:  "}",
+				Line:   line,
+				Column: column,
+			}
 		case !escaped && char == '[':
 			tokens <- Token{
 				Type:   TokenBracketStart,

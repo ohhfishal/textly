@@ -11,9 +11,14 @@ import (
 	"time"
 )
 
-type Compile struct {
-	Input *os.File      `arg:""`
+type RunArgs struct {
 	Delay time.Duration `default:"0.1s"`
+	Beat  time.Duration `default:"1s"`
+}
+
+type Compile struct {
+	Input   *os.File `arg:""`
+	RunArgs RunArgs  `embed:""`
 }
 
 func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
@@ -48,12 +53,16 @@ func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
 			case OpPrint:
 				for _, char := range instruction.Arg.(string) {
 					fmt.Fprintf(stdout, "%c", char)
-					time.Sleep(cmd.Delay)
+					time.Sleep(cmd.RunArgs.Delay)
 				}
 			case OpDelete:
 				for range instruction.Arg.(int) {
 					fmt.Fprint(stdout, "\b \b")
-					time.Sleep(cmd.Delay)
+					time.Sleep(cmd.RunArgs.Delay)
+				}
+			case OpSleep:
+				for range instruction.Arg.(int) {
+					time.Sleep(cmd.RunArgs.Beat)
 				}
 			}
 		}

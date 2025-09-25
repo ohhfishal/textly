@@ -47,7 +47,10 @@ func TestValid(t *testing.T) {
 			defer os.Remove(f.Name())
 			cmd := compile.Compile{
 				Input: f,
-				Delay: 0,
+				RunArgs: compile.RunArgs{
+					Delay: 0,
+					Beat:  0,
+				},
 			}
 
 			var output MockTerminal

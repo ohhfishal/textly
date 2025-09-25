@@ -1,3 +1,6 @@
 .devenv*
 .pre*
 *.txt
+
+# Go binary
+textly
