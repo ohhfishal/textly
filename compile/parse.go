@@ -65,6 +65,7 @@ func parse(ctx context.Context, reader *TokenReader) ([]Instruction, error) {
 }
 
 func parseSwitch(ctx context.Context, reader *TokenReader, token Token) ([]Instruction, error) {
+	// TODO: move into main parse function
 	switch token.Type {
 	case TokenNewline:
 		fallthrough
@@ -88,7 +89,7 @@ func parseSwitch(ctx context.Context, reader *TokenReader, token Token) ([]Instr
 	case TokenEOF:
 		return []Instruction{}, io.EOF
 	default:
-		return nil, fmt.Errorf("unknown token: %s", token.String())
+		return nil, fmt.Errorf("switch: unknown token: %s", token.String())
 	}
 }
 
@@ -133,8 +134,18 @@ func parseBracket(ctx context.Context, reader *TokenReader) ([]Instruction, erro
 			fallthrough
 		case next.Type == TokenEOF:
 			return nil, fmt.Errorf(`expected: "]" got: "%s"`, next)
+		case next.Type == TokenCommandStart:
+			command, err := parseCommand(ctx, reader)
+			if err != nil {
+				return nil, fmt.Errorf("invalid command: %w", err)
+			}
+			instructions = append(instructions, command...)
 		case next.Type == TokenBracketStart:
-			return nil, errors.New("not implemented: nested bracked")
+			bracketInstructions, err := parseBracket(ctx, reader)
+			if err != nil {
+				return nil, fmt.Errorf("invalid bracket section: %w", err)
+			}
+			instructions = append(instructions, bracketInstructions...)
 		case next.Type == TokenCharacter:
 			instructions = append(instructions, Instruction{
 				Opcode: OpPrint,
@@ -142,7 +153,7 @@ func parseBracket(ctx context.Context, reader *TokenReader) ([]Instruction, erro
 			})
 			chars++
 		default:
-			return nil, fmt.Errorf("unknown token: %s", next.String())
+			return nil, fmt.Errorf("bracket: unknown token: %s", next.String())
 		}
 	}
 }

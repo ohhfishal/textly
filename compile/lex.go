@@ -11,7 +11,7 @@ import (
 type TokenType uint8
 
 const (
-	TokenCharacter TokenType = iota
+	TokenCharacter TokenType = iota + 1
 	TokenBracketStart
 	TokenBracketClose
 	TokenCommandStart
