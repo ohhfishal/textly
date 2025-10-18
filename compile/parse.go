@@ -7,23 +7,6 @@ import (
 	"io"
 )
 
-type Opcode string
-
-const (
-	OpPrint  = "print"
-	OpDelete = "delete"
-	OpSleep  = "sleep"
-)
-
-type Instruction struct {
-	Opcode Opcode `json:"opcode"`
-	Arg    any    `json:"arg"`
-}
-
-type Program struct {
-	Instructions []Instruction
-}
-
 type TokenReader struct {
 	Channel <-chan Token
 	cache   *Token
@@ -44,11 +27,17 @@ func (reader *TokenReader) Pop() Token {
 	return next
 }
 
-func Parse(ctx context.Context, tokens <-chan Token) (instructions []Instruction, err error) {
+func Parse(ctx context.Context, tokens <-chan Token) (program *Program, err error) {
 	var reader = TokenReader{
 		Channel: tokens,
 	}
-	return parse(ctx, &reader)
+	instructions, err := parse(ctx, &reader)
+	if err != nil {
+		return nil, err
+	}
+	return &Program{
+		Instructions: instructions,
+	}, nil
 }
 
 func parse(ctx context.Context, reader *TokenReader) ([]Instruction, error) {

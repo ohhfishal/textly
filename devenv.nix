@@ -5,6 +5,7 @@ in
 {
   packages = [
     pkgs-unstable.go
+    pkgs.espeak
   ];
 
   git-hooks.hooks = {

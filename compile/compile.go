@@ -8,17 +8,14 @@ import (
 	"io"
 	"os"
 	"sync"
-	"time"
 )
 
-type RunArgs struct {
-	Delay time.Duration `default:"0.1s"`
-	Beat  time.Duration `default:"1s"`
-}
-
 type Compile struct {
-	Input   *os.File `arg:""`
-	RunArgs RunArgs  `embed:""`
+	Input           *os.File        `arg:""`
+	Dump            bool            `short:"D" help:"Print all instructions to standard out then return."`
+	Optimize        bool            `negatable:"" default:"true" help:"Enable optimizations (default: enabled)"`
+	OptimizeOptions OptimizeOptions `embed:""`
+	RunOptions      RunOptions      `embed:""`
 }
 
 func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
@@ -40,31 +37,27 @@ func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
 
 	// Parser
 	wg.Go(func() {
-		instructions, err := Parse(ctx, tokens)
+		program, err := Parse(ctx, tokens)
 		if err != nil {
 			errs <- err
 			return
 		}
-		instructions = Optimize(instructions)
 
-		// TODO: Wrap in function and enable via option
-		for _, instruction := range instructions {
-			switch instruction.Opcode {
-			case OpPrint:
-				for _, char := range instruction.Arg.(string) {
-					fmt.Fprintf(stdout, "%c", char)
-					time.Sleep(cmd.RunArgs.Delay)
-				}
-			case OpDelete:
-				for range instruction.Arg.(int) {
-					fmt.Fprint(stdout, "\b \b")
-					time.Sleep(cmd.RunArgs.Delay)
-				}
-			case OpSleep:
-				for range instruction.Arg.(int) {
-					time.Sleep(cmd.RunArgs.Beat)
-				}
+		// TODO: Optimize while reading from the channel?
+		if cmd.Optimize {
+			program.Optimize(cmd.OptimizeOptions)
+		}
+
+		if cmd.Dump {
+			for i, instruction := range program.Instructions {
+				fmt.Fprintf(stdout, "%3d: %s\n", i, instruction)
 			}
+			return
+		}
+
+		if err := program.Run(stdout, cmd.RunOptions); err != nil {
+			errs <- err
+			return
 		}
 	})
 

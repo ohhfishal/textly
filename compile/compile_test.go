@@ -46,8 +46,9 @@ func TestValid(t *testing.T) {
 
 			defer os.Remove(f.Name())
 			cmd := compile.Compile{
-				Input: f,
-				RunArgs: compile.RunArgs{
+				Input:    f,
+				Optimize: false,
+				RunOptions: compile.RunOptions{
 					Delay: 0,
 					Beat:  0,
 				},
