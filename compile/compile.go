@@ -12,6 +12,7 @@ import (
 
 type Compile struct {
 	Input           *os.File        `arg:""`
+	Lex             bool            `short:"L" help:"Only run the lexer and print all tokens to standard out."`
 	Dump            bool            `short:"D" help:"Print all instructions to standard out then return."`
 	Optimize        bool            `negatable:"" default:"true" help:"Enable optimizations (default: enabled)"`
 	OptimizeOptions OptimizeOptions `embed:""`
@@ -37,6 +38,12 @@ func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
 
 	// Parser
 	wg.Go(func() {
+		if cmd.Lex {
+			for token := range tokens {
+				fmt.Println(stdout, token)
+			}
+			return
+		}
 		program, err := Parse(ctx, tokens)
 		if err != nil {
 			errs <- err

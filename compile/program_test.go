@@ -49,6 +49,16 @@ func TestProgramRun(t *testing.T) {
 			expected: "hello\b \b\b \b",
 		},
 		{
+			name: "simple clear",
+			program: Program{
+				Instructions: []Instruction{
+					{Opcode: OpClear},
+				},
+			},
+			options:  RunOptions{Delay: 0},
+			expected: ClearANSI,
+		},
+		{
 			name: "list mode converts spaces to newlines",
 			program: Program{
 				Instructions: []Instruction{
@@ -138,6 +148,19 @@ func TestOptimize(t *testing.T) {
 			expected: []Instruction{
 				{Opcode: OpPrint, Arg: "hello"},
 				{Opcode: OpDelete, Arg: 2},
+			},
+		},
+		{
+			name: "combine consecutive sleeps",
+			program: Program{
+				Instructions: []Instruction{
+					{Opcode: OpSleep, Arg: 1},
+					{Opcode: OpSleep, Arg: 2},
+				},
+			},
+			options: OptimizeOptions{},
+			expected: []Instruction{
+				{Opcode: OpSleep, Arg: 3},
 			},
 		},
 		{

@@ -83,22 +83,37 @@ func parseSwitch(ctx context.Context, reader *TokenReader, token Token) ([]Instr
 }
 
 func parseCommand(ctx context.Context, reader *TokenReader) ([]Instruction, error) {
-	// TODO: Only supports a single command currently expand as needed
+	// TODO: Pop all the tokens until the bracket end, then parse off those tokens!
+	//       To enable a lot more types of commands
 	var instructions []Instruction
-	var beats int
 	for {
 		next := reader.Pop()
 		switch next.Type {
 		case TokenCommandClose:
 			// Happy case
-			// TODO: Append the deleting command
-			return append(instructions, Instruction{
-				Opcode: OpSleep,
-				Arg:    beats,
-			}), nil
+			return instructions, nil
 		case TokenCharacter:
+			// TODO: Support whitespace
+			// {.. clear}
 			if next.Value == "." {
-				beats++
+				instructions = append(instructions, Instruction{
+					Opcode: OpSleep,
+					Arg:    1,
+				})
+			} else if next.Value == "c" {
+				chars := []string{"l", "e", "a", "r"}
+				for _, char := range chars {
+					next := reader.Pop()
+					if next.Type != TokenCharacter {
+						// TODO: Make this error message good
+						return nil, fmt.Errorf("invalid keyword")
+					} else if next.Value != char {
+						return nil, fmt.Errorf("invalid keyword: expected '%s'", char)
+					}
+				}
+				instructions = append(instructions, Instruction{
+					Opcode: OpClear,
+				})
 			}
 		default:
 			return nil, fmt.Errorf("expected '}' or character got: %s", next.String())

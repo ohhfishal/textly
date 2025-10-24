@@ -16,6 +16,11 @@ const (
 	OpPrint  = "print"  // print(content str)
 	OpDelete = "delete" // delete(count int) // Number of characters to backspace
 	OpSleep  = "sleep"  // sleep(seconds int)
+	OpClear  = "clear"  // clear()
+)
+
+const (
+	ClearANSI = "\033[H\033[2J"
 )
 
 type Instruction struct {
@@ -24,11 +29,16 @@ type Instruction struct {
 }
 
 func (instruction Instruction) String() string {
+	arg := instruction.Arg
+	if arg == nil {
+		arg = ""
+	}
+
 	return strings.ReplaceAll(
 		fmt.Sprintf(
 			"%s(%v)",
 			instruction.Opcode,
-			instruction.Arg,
+			arg,
 		),
 		"\n",
 		"\\n",
@@ -66,7 +76,12 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 			for range instruction.Arg.(int) {
 				time.Sleep(options.Beat)
 			}
+		case OpClear:
+			fmt.Fprintf(stdout, ClearANSI)
+		default:
+			return fmt.Errorf("unknown op: %s", instruction.Opcode)
 		}
+
 	}
 	return nil
 }
@@ -97,6 +112,8 @@ func optimize(original []Instruction, opts OptimizeOptions) ([]Instruction, bool
 	cur := &original[0]
 	for _, next := range original[1:] {
 		switch {
+		case cur.Opcode == OpSleep && cur.Opcode == next.Opcode:
+			cur.Arg = cur.Arg.(int) + next.Arg.(int)
 		case cur.Opcode == OpPrint && cur.Opcode == next.Opcode:
 			cur.Arg = cur.Arg.(string) + next.Arg.(string)
 		case opts.Flatten && cur.Opcode == OpPrint && next.Opcode == OpDelete:

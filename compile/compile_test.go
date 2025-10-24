@@ -25,6 +25,10 @@ func TestValid(t *testing.T) {
 			Input:  "Hello \\\nWorld",
 			Output: "Hello World",
 		},
+		{
+			Input:  "Hello{clear}",
+			Output: "Hello" + compile.ClearANSI,
+		},
 	}
 
 	dir := t.TempDir()
