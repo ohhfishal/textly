@@ -17,6 +17,7 @@ const (
 	TokenCommandStart
 	TokenCommandClose
 	TokenNewline
+	TokenDecorator
 	TokenEOF
 )
 
@@ -43,6 +44,8 @@ func (tokenType TokenType) String() string {
 		return "NEWLINE"
 	case TokenCharacter:
 		return "CHAR   "
+	case TokenDecorator:
+		return "@      "
 	default:
 		return "UNKNOWN"
 	}
@@ -127,6 +130,13 @@ func Lex(ctx context.Context, file *bufio.Reader, tokens chan<- Token) error {
 			comment = false
 			line++
 			column = -1
+		case !escaped && char == '@':
+			tokens <- Token{
+				Type:   TokenDecorator,
+				Value:  "@",
+				Line:   line,
+				Column: column,
+			}
 		case !escaped && char == '#':
 			comment = true
 		case !escaped && char == '\\':

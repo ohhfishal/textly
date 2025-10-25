@@ -1,6 +1,7 @@
 package compile
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -13,14 +14,21 @@ const _MAX_OPTIMIZATIONS = 10
 type Opcode string
 
 const (
-	OpPrint  = "print"  // print(content str)
-	OpDelete = "delete" // delete(count int) // Number of characters to backspace
-	OpSleep  = "sleep"  // sleep(seconds int)
-	OpClear  = "clear"  // clear()
+	OpPrint     = "print"     // print(content str)
+	OpDelete    = "delete"    // delete(count int) // Number of characters to backspace
+	OpSleep     = "sleep"     // sleep(seconds int)
+	OpClear     = "clear"     // clear()
+	OpPushColor = "pushColor" // pushColor(color string)
+	OpPopColor  = "popColor"  // popColor()
 )
 
 const (
 	ClearANSI = "\033[H\033[2J"
+)
+
+const (
+	Red   = "\033[31m"
+	Reset = "\033[0m"
 )
 
 type Instruction struct {
@@ -56,7 +64,7 @@ type RunOptions struct {
 }
 
 func (program Program) Run(stdout io.Writer, options RunOptions) error {
-	// TODO: Support option to handle all deletes and only write the final output
+	colors := []string{Reset}
 	for _, instruction := range program.Instructions {
 		switch instruction.Opcode {
 		case OpPrint:
@@ -78,6 +86,18 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 			}
 		case OpClear:
 			fmt.Fprintf(stdout, ClearANSI)
+		case OpPushColor:
+			color := instruction.Arg.(string)
+			fmt.Fprint(stdout, color)
+			colors = append(colors, color)
+		case OpPopColor:
+			if len(colors) == 0 {
+				return errors.New("call to popColor when the stack is empty")
+			}
+			reset := colors[len(colors)-2]
+			colors = colors[:len(colors)-1]
+			fmt.Fprint(stdout, reset)
+
 		default:
 			return fmt.Errorf("unknown op: %s", instruction.Opcode)
 		}

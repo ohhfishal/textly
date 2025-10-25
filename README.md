@@ -5,8 +5,8 @@ A text parser for generating terminal animations.
 ## In development
 
 ### New Features
+- [X] Comments
 - [X] Clearing the screen `{clear}`
-- [ ] Comments
 - [ ] Better control of whitespace
     ```
     Here is some text {Something to denote ignore newline]
@@ -30,7 +30,23 @@ A text parser for generating terminal animations.
     ```
     Normal Text
     @red{ Here is some red text }
-    Back to normal text
+    ```
+- [ ] Header to set options and macros
+    ```
+    ---
+    shell: enable
+    macros:
+        - name: example
+          color: 0xFFFFFF
+          speed: fast
+    ---
+    @example {
+    Text using custom macro
+    }
+    ```
+- [ ] espeak integration?
+    ```
+    @espeak{ Say this aloud }
     ```
 
 ### Espeak

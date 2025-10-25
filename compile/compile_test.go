@@ -3,7 +3,7 @@ package compile_test
 import (
 	"fmt"
 	"github.com/ohhfishal/textly/compile"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -29,23 +29,35 @@ func TestValid(t *testing.T) {
 			Input:  "Hello{clear}",
 			Output: "Hello" + compile.ClearANSI,
 		},
+		{
+			Input:  "Hello{clear}",
+			Output: "Hello" + compile.ClearANSI,
+		},
+		{
+			Input:  "@red{test}",
+			Output: compile.Red + "test" + compile.Reset,
+		},
+		{
+			Input:  "@(red){test}",
+			Output: compile.Red + "test" + compile.Reset,
+		},
 	}
 
 	dir := t.TempDir()
 	for i, test := range tests {
-		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			assert := assert.New(t)
+		t.Run(fmt.Sprintf("%d:%s", i, test.Input), func(t *testing.T) {
+			require := require.New(t)
 
 			f, err := os.CreateTemp(dir, fmt.Sprintf("test_%d.txt", i))
 			defer f.Close()
-			assert.Nil(err)
+			require.Nil(err)
 
 			_, err = f.WriteString(test.Input)
-			assert.Nil(err)
+			require.Nil(err)
 			f.Close()
 
 			f, err = os.Open(f.Name())
-			assert.Nil(err)
+			require.Nil(err)
 			defer f.Close()
 
 			defer os.Remove(f.Name())
@@ -60,9 +72,9 @@ func TestValid(t *testing.T) {
 
 			var output MockTerminal
 			err = cmd.Run(t.Context(), &output)
-			assert.Nil(err)
+			require.Nil(err)
 
-			assert.Equal(
+			require.Equal(
 				test.Output,
 				output.String(),
 			)
