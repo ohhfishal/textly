@@ -26,11 +26,6 @@ const (
 	ClearANSI = "\033[H\033[2J"
 )
 
-const (
-	Red   = "\033[31m"
-	Reset = "\033[0m"
-)
-
 type Instruction struct {
 	Opcode Opcode `json:"opcode"`
 	Arg    any    `json:"arg"`

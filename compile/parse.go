@@ -143,14 +143,12 @@ func parseDecoratorWord(ctx context.Context, reader *TokenReader) ([]Instruction
 		reader.Pop()
 	}
 	decorator := buffer.String()
-	switch decorator {
-	case "red":
-		before, after := setColor(Red)
+	if color, ok := colorMap[decorator]; ok {
+		before, after := setColor(color)
 		return before, after, nil
-	default:
-		return nil, nil, fmt.Errorf(`unknown decorator: "%s"`, decorator)
-
 	}
+	// TODO: Implement more decorators
+	return nil, nil, fmt.Errorf(`unknown decorator: "%s"`, decorator)
 }
 
 func setColor(color string) ([]Instruction, []Instruction) {
