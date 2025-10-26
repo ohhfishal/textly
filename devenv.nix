@@ -16,5 +16,6 @@ in
     govet.enable = true;
     gotest.enable = true;
     gofmt.enable = true;
+    golangci-lint.enable = true;
   };
 }
