@@ -235,7 +235,7 @@ func TestProgramRunTiming(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			start := time.Now()
-			tt.program.Run(&buf, tt.options)
+			assert.Nil(t, tt.program.Run(&buf, tt.options))
 			duration := time.Since(start)
 
 			assert.GreaterOrEqual(t, duration, tt.minDuration)

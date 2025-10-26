@@ -28,7 +28,7 @@ func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
 
 	// Lexer
 	wg.Go(func() {
-		defer cmd.Input.Close()
+		defer cmd.Input.Close() //nolint:errcheck
 		defer close(tokens)
 		reader := bufio.NewReader(cmd.Input)
 		if err := Lex(ctx, reader, tokens); err != nil {
@@ -57,7 +57,9 @@ func (cmd *Compile) Run(ctx context.Context, stdout io.Writer) error {
 
 		if cmd.Dump {
 			for i, instruction := range program.Instructions {
-				fmt.Fprintf(stdout, "%3d: %s\n", i, instruction)
+				if _, err := fmt.Fprintf(stdout, "%3d: %s\n", i, instruction); err != nil {
+					errs <- err
+				}
 			}
 			return
 		}

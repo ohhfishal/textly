@@ -49,18 +49,18 @@ func TestValid(t *testing.T) {
 			require := require.New(t)
 
 			f, err := os.CreateTemp(dir, fmt.Sprintf("test_%d.txt", i))
-			defer f.Close()
 			require.Nil(err)
+			defer f.Close() //nolint:errcheck
 
 			_, err = f.WriteString(test.Input)
 			require.Nil(err)
-			f.Close()
+			f.Close() //nolint:errcheck
 
 			f, err = os.Open(f.Name())
 			require.Nil(err)
-			defer f.Close()
+			defer f.Close() //nolint:errcheck
 
-			defer os.Remove(f.Name())
+			defer os.Remove(f.Name()) //nolint:errcheck
 			cmd := compile.Compile{
 				Input:    f,
 				Optimize: false,

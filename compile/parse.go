@@ -175,14 +175,15 @@ func parseCommand(ctx context.Context, reader *TokenReader) ([]Instruction, erro
 			// Happy case
 			return instructions, nil
 		case TokenCharacter:
-			// TODO: Support whitespace
+			// TODO: Support multiple commands and whitespace
 			// {.. clear}
-			if next.Value == "." {
+			switch next.Value {
+			case ".":
 				instructions = append(instructions, Instruction{
 					Opcode: OpSleep,
 					Arg:    1,
 				})
-			} else if next.Value == "c" {
+			case "c":
 				chars := []string{"l", "e", "a", "r"}
 				for _, char := range chars {
 					next := reader.Pop()

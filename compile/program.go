@@ -67,12 +67,16 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 				if options.List && char == ' ' {
 					char = '\n'
 				}
-				fmt.Fprintf(stdout, "%c", char)
+				if _, err := fmt.Fprintf(stdout, "%c", char); err != nil {
+					return err
+				}
 				time.Sleep(options.Delay)
 			}
 		case OpDelete:
 			for range instruction.Arg.(int) {
-				fmt.Fprint(stdout, "\b \b")
+				if _, err := fmt.Fprint(stdout, "\b \b"); err != nil {
+					return err
+				}
 				time.Sleep(options.Delay)
 			}
 		case OpSleep:
@@ -80,10 +84,14 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 				time.Sleep(options.Beat)
 			}
 		case OpClear:
-			fmt.Fprintf(stdout, ClearANSI)
+			if _, err := fmt.Fprint(stdout, ClearANSI); err != nil {
+				return err
+			}
 		case OpPushColor:
 			color := instruction.Arg.(string)
-			fmt.Fprint(stdout, color)
+			if _, err := fmt.Fprint(stdout, color); err != nil {
+				return err
+			}
 			colors = append(colors, color)
 		case OpPopColor:
 			if len(colors) == 0 {
@@ -91,7 +99,9 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 			}
 			reset := colors[len(colors)-2]
 			colors = colors[:len(colors)-1]
-			fmt.Fprint(stdout, reset)
+			if _, err := fmt.Fprint(stdout, reset); err != nil {
+				return err
+			}
 
 		default:
 			return fmt.Errorf("unknown op: %s", instruction.Opcode)
@@ -120,7 +130,7 @@ func (program *Program) Optimize(options OptimizeOptions) {
 
 func optimize(original []Instruction, opts OptimizeOptions) ([]Instruction, bool) {
 	var instructions []Instruction
-	if original == nil || len(original) == 0 {
+	if len(original) == 0 {
 		return []Instruction{}, false
 	}
 
