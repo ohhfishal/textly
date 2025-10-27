@@ -54,7 +54,7 @@ type Program struct {
 
 type RunOptions struct {
 	List  bool          `short:"l" help:"Output a single word per line."`
-	Delay time.Duration `default:"0.1s"`
+	Delay time.Duration `default:"0.05s"`
 	Beat  time.Duration `default:"1s"`
 }
 

@@ -26,7 +26,7 @@ A text parser for generating terminal animations.
         Also the tabs at the start of the line are ignored!
     }
     ```
-- [ ] Color support 
+- [X] Color support
     ```
     Normal Text
     @red{ Here is some red text }
