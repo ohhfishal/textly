@@ -117,7 +117,7 @@ func TestOptimize(t *testing.T) {
 					{Opcode: OpDelete, Arg: 2},
 				},
 			},
-			options: OptimizeOptions{Flatten: true},
+			options: OptimizeOptions{Render: true},
 			expected: []Instruction{
 				{Opcode: OpPrint, Arg: "hel"},
 			},
@@ -131,7 +131,7 @@ func TestOptimize(t *testing.T) {
 					{Opcode: OpPrint, Arg: "ed"},
 				},
 			},
-			options: OptimizeOptions{Flatten: true},
+			options: OptimizeOptions{Render: true},
 			expected: []Instruction{
 				{Opcode: OpPrint, Arg: "tested"},
 			},
@@ -144,7 +144,7 @@ func TestOptimize(t *testing.T) {
 					{Opcode: OpDelete, Arg: 2},
 				},
 			},
-			options: OptimizeOptions{Flatten: false},
+			options: OptimizeOptions{Render: false},
 			expected: []Instruction{
 				{Opcode: OpPrint, Arg: "hello"},
 				{Opcode: OpDelete, Arg: 2},
@@ -183,7 +183,7 @@ func TestOptimize(t *testing.T) {
 					{Opcode: OpPrint, Arg: "o"},
 				},
 			},
-			options: OptimizeOptions{Flatten: true},
+			options: OptimizeOptions{Render: true},
 			expected: []Instruction{
 				{Opcode: OpPrint, Arg: "hello"},
 			},

@@ -112,7 +112,7 @@ func (program Program) Run(stdout io.Writer, options RunOptions) error {
 }
 
 type OptimizeOptions struct {
-	Flatten bool `help:"Premptively delete before printing to stdout."`
+	Render bool `help:"Premptively delete before printing to stdout."`
 }
 
 func (program *Program) Optimize(options OptimizeOptions) {
@@ -141,7 +141,7 @@ func optimize(original []Instruction, opts OptimizeOptions) ([]Instruction, bool
 			cur.Arg = cur.Arg.(int) + next.Arg.(int)
 		case cur.Opcode == OpPrint && cur.Opcode == next.Opcode:
 			cur.Arg = cur.Arg.(string) + next.Arg.(string)
-		case opts.Flatten && cur.Opcode == OpPrint && next.Opcode == OpDelete:
+		case opts.Render && cur.Opcode == OpPrint && next.Opcode == OpDelete:
 			arg := cur.Arg.(string)
 			cur.Arg = arg[:len(arg)-next.Arg.(int)]
 		default:
